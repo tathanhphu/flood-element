@@ -18,7 +18,7 @@ export const settings: TestSettings = {
 	//chromeVersion: 'stable',
 	//device: Device.
 	loopCount: 1,
-	waitTimeout: 160,
+	waitTimeout: 180,
 	
 	// Automatically wait for elements before trying to interact with them
 	waitUntil: 'visible',
@@ -35,13 +35,13 @@ export default () => {
 	})
 
 	afterAll(async browser => {
+		await browser.takeScreenshot();
 		console.log('Logout ....')
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]"));
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]//a[.='Log out']"))
 	})
 	step('Login to qTest', async browser => {
 		// visit instructs the browser to launch, open a page, and navigate to https://challenge.flood.io
-		await browser.takeScreenshot();
 		const username = await browser.findElement(By.xpath(`//input[@id='userName']`));
 		await username.sendKeys(qTestCredential.username);
 		const password = await browser.findElement(By.xpath(`//input[@id='password']`));
@@ -73,7 +73,8 @@ export default () => {
 
 	// browser keyword can be shorthanded as "b" or anything that is descriptive to you.
 	step('Goto Launch ', async browser => {
-	
+		await browser.takeScreenshot();
+		
 		await browser.click(By.id('#working-tab_test-execution_label'));
 		// const testExecutionRoot = await b.findElement(By.id('#test-execution-tree-content'));
 		const testCycles = await browser.findElements(By.xpath("//div[contains(@class, 'tree-row removable') and contains(@title, 'CL')]//span[contains(@class, 'icon-toscaTestEvent')]/.."));
@@ -90,8 +91,10 @@ export default () => {
 		console.log(`== wait for new page ...`);
 
 		await browser.waitForNewPage();
-		//console.log(`== wait Launch loading ...`);
-		//await browser.wait(Until.elementIsNotVisible(By.xpath("//aut-spinner")));
+		
+	})
+
+	step('Go index page of Launch', async browser => {
 		
 		console.log(`== wait Tree loading ...`);
 		await browser.wait(Until.elementIsVisible(By.xpath("//div[contains(@class, 'right-box')]//td[contains(@class, 'text-truncate grid-item name-column')]")))
