@@ -1,6 +1,17 @@
 import { step, TestSettings, By, beforeAll, afterAll, Until } from '@flood/element'
 
-const QTEST_CREDENTIALS = require('./test-data/qtest');
+let QTEST_CREDENTIALS = [];
+for (let i = 31 ; i <= 40; i++) {
+	const generatedName = `elite${i}`;
+	QTEST_CREDENTIALS.push({
+		username: `${generatedName}@${generatedName}.com`,
+		password: 'admin123',
+		url: `https://${generatedName}.staging.qtestnet.com/`,
+		selectedProject: `${generatedName}`
+	})
+}
+
+//require('./test-data/qtest');
 let count = 0;
 export const settings: TestSettings = {
 	userAgent: 'flood-chrome-test',
@@ -12,7 +23,7 @@ export const settings: TestSettings = {
 	// Automatically wait for elements before trying to interact with them
 	waitUntil: 'visible',
 }
-const INPUT_PARAM = +(process.env.USER_INDEX || '0');
+const INPUT_PARAM = Math.floor(Math.random() * Math.floor(QTEST_CREDENTIALS.length));// +(process.env.USER_INDEX || '0');
 const qTestCredential = QTEST_CREDENTIALS[INPUT_PARAM];
 // console.log(`== INPUT_PARAM: ${INPUT_PARAM}\r\n QTEST_CREDENTIALS ${JSON.stringify(QTEST_CREDENTIALS)}`);
 console.log(`== qTestCredential ${JSON.stringify(qTestCredential)}`);
@@ -25,6 +36,8 @@ export default () => {
 
 	afterAll(async browser => {
 		console.log('Logout ....')
+		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]"));
+		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]//a[.='Log out']"))
 	})
 	step('Login to qTest', async browser => {
 		// visit instructs the browser to launch, open a page, and navigate to https://challenge.flood.io
@@ -83,12 +96,12 @@ export default () => {
 		console.log(`== wait Tree loading ...`);
 		await browser.wait(Until.elementIsVisible(By.xpath("//div[contains(@class, 'right-box')]//td[contains(@class, 'text-truncate grid-item name-column')]")))
 
-		// await b.switchTo().defaultContent();
 		await browser.click(By.xpath("//div[@class='dialog']//div[@title='Close']"))
 		
-		//await b.wait(3000);
-		//await b.visit('https://launch.qtestdev.com/app/dashboard');
-		
+		const alertBannerCloseBtn = await browser.maybeFindElement(By.xpath("//aut-banner-alert//button[@title='Close']/span[1]"));
+		if (alertBannerCloseBtn) {
+			await browser.click(alertBannerCloseBtn);
+		}
 	})
 
 	step.repeat(100, 'Loop refresh Launch ',  async browser => {
@@ -100,7 +113,6 @@ export default () => {
 		}
 		//await b.click(By.css('.reload-page'))
 		const listElements = await browser.findElements(By.xpath("//div[contains(@class, 'list-content table-body')]//tr[not(contains(., 'No items'))]"));
-		console.log(`Number of job count ${listElements.length}`);
-		
+		console.log(`Number of job count ${listElements.length}`);		
 	})
 }
