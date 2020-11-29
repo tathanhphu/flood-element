@@ -12,7 +12,7 @@ for (let i = 31 ; i <= 40; i++) {
 }
 
 const waitTimeout = undefined; 
-const repeatReloadLaunch = 1
+const repeatReloadLaunch = 10
 //require('./test-data/qtest');
 let count = 0;
 const stepOptions: StepOptions = {
@@ -22,7 +22,7 @@ export const settings: TestSettings = {
 	userAgent: 'flood-chrome-test',
 	//chromeVersion: 'stable',
 	//device: Device.
-	loopCount: 100,
+	loopCount: 1,
 	waitTimeout: waitTimeout,
 	screenshotOnFailure: true,
 	actionDelay: 2,
@@ -47,7 +47,7 @@ export default () => {
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]"));
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]//a[.='Log out']"))
 	})
-	step('Login to qTest', stepOptions, async browser => {
+	step('[Step-1] Login to qTest', stepOptions, async browser => {
 		
 		const username = await browser.findElement(By.xpath(`//input[@id='userName']`));
 		await username.sendKeys(qTestCredential.username);
@@ -81,7 +81,7 @@ export default () => {
 	})
 
 	// browser keyword can be shorthanded as "b" or anything that is descriptive to you.
-	step('Goto Launch ', stepOptions, async browser => {
+	step('[Step-2] Goto Launch ', stepOptions, async browser => {
 		await browser.takeScreenshot();
 		
 		await browser.click(By.id('#working-tab_test-execution_label'));
@@ -103,9 +103,13 @@ export default () => {
 		
 	})
 
-	step('Go index page of Launch', stepOptions, async browser => {
+	step('[Step-3] Go index page of Launch', stepOptions, async browser => {
 		
 		console.log(`== wait Tree loading ...`);
+		const waitSpinner = await browser.maybeFindElement(By.xpath('//aut-spinner'))
+		if (waitSpinner) {
+			await browser.wait (Until.elementIsNotVisible(waitSpinner));
+		}
 		await browser.wait(Until.elementIsVisible(By.xpath("//div[contains(@class, 'right-box')]//td[contains(@class, 'text-truncate grid-item name-column')]")))
 
 		await browser.click(By.xpath("//div[@class='dialog']//div[@title='Close']"))
@@ -116,7 +120,7 @@ export default () => {
 		}
 	})
 
-	step.repeat(repeatReloadLaunch, `Refesh Launch ${repeatReloadLaunch} times`,  async browser => {
+	step.repeat(repeatReloadLaunch, `[Step-4] Refesh Launch ${repeatReloadLaunch} times`,  async browser => {
 		console.log(`Click reload ${++count}, user index ${qTestCredential.username}`);
 		if (count % 2) {
 			await browser.click(By.xpath("//button[.='JOBS']"))
