@@ -1,4 +1,4 @@
-import { step, TestSettings, By, beforeAll, afterAll, Until } from '@flood/element'
+import { step, TestSettings, By, beforeAll, afterAll, Until, StepOptions } from '@flood/element'
 
 let QTEST_CREDENTIALS = [];
 for (let i = 31 ; i <= 40; i++) {
@@ -11,15 +11,22 @@ for (let i = 31 ; i <= 40; i++) {
 	})
 }
 
+const waitTimeout = undefined; 
+const repeatReloadLaunch = 1
 //require('./test-data/qtest');
 let count = 0;
+const stepOptions: StepOptions = {
+	waitTimeout: waitTimeout
+}
 export const settings: TestSettings = {
 	userAgent: 'flood-chrome-test',
 	//chromeVersion: 'stable',
 	//device: Device.
-	loopCount: 1,
-	waitTimeout: 180,
-	
+	loopCount: 100,
+	waitTimeout: waitTimeout,
+	screenshotOnFailure: true,
+	actionDelay: 2,
+	ignoreHTTPSErrors: true,
 	// Automatically wait for elements before trying to interact with them
 	waitUntil: 'visible',
 }
@@ -40,14 +47,15 @@ export default () => {
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]"));
 		await browser.click(By.xpath("//div[contains(@class, 'user-avatar')]//a[.='Log out']"))
 	})
-	step('Login to qTest', async browser => {
-		// visit instructs the browser to launch, open a page, and navigate to https://challenge.flood.io
+	step('Login to qTest', stepOptions, async browser => {
+		
 		const username = await browser.findElement(By.xpath(`//input[@id='userName']`));
 		await username.sendKeys(qTestCredential.username);
 		const password = await browser.findElement(By.xpath(`//input[@id='password']`));
 		await password.sendKeys(qTestCredential.password);
 		await browser.click(By.xpath(`//a[@id='loginButton']`));
 		await browser.waitForNavigation();
+		/*
 		console.log(`Waiting Terminate Sessions dialog ...`);
 		const terminateSessions = await browser.maybeFindElement(By.css('.modal-title'));
 		console.log(`Terminate Sessions dialog is ${terminateSessions ? 'exists' : ''}`);
@@ -59,6 +67,7 @@ export default () => {
 				await browser.click(By.id('reloginBtn'));
 			}
 		}
+		//*/
 		await browser.click(By.id('projectName'));
 		const projects = await browser.findElements(By.css('.projectNameLink'));
 		for (let i = 0; i < projects.length; i++) {
@@ -72,7 +81,7 @@ export default () => {
 	})
 
 	// browser keyword can be shorthanded as "b" or anything that is descriptive to you.
-	step('Goto Launch ', async browser => {
+	step('Goto Launch ', stepOptions, async browser => {
 		await browser.takeScreenshot();
 		
 		await browser.click(By.id('#working-tab_test-execution_label'));
@@ -94,7 +103,7 @@ export default () => {
 		
 	})
 
-	step('Go index page of Launch', async browser => {
+	step('Go index page of Launch', stepOptions, async browser => {
 		
 		console.log(`== wait Tree loading ...`);
 		await browser.wait(Until.elementIsVisible(By.xpath("//div[contains(@class, 'right-box')]//td[contains(@class, 'text-truncate grid-item name-column')]")))
@@ -107,7 +116,7 @@ export default () => {
 		}
 	})
 
-	step.repeat(100, 'Loop refresh Launch ',  async browser => {
+	step.repeat(repeatReloadLaunch, `Refesh Launch ${repeatReloadLaunch} times`,  async browser => {
 		console.log(`Click reload ${++count}, user index ${qTestCredential.username}`);
 		if (count % 2) {
 			await browser.click(By.xpath("//button[.='JOBS']"))
